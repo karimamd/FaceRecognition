@@ -21,7 +21,7 @@ strategy:
     can measure distance with all training points and find label accordingly
     
 current step:
-    finding Sb (replacement to B for higher no of classes) in LDA
+    finding Sb (replacement to B for higher no of classes) in LDA 
     finding mean for each class training data (done)
 # =============================================================================
 '''
@@ -30,7 +30,7 @@ import numpy as np
 rows=400
 #differenct people
 number_of_classes=40
-nimages_in_each_class=10
+nImages_in_each_class=10
 #dimentions of vector (image) before reduction
 dimentions=10304
 
@@ -39,15 +39,32 @@ dimentions=10304
 #TODO repalce this with real D
 D=np.ones((rows, dimentions))
 #print(D)
-M1=np.mean(D,axis=1)
-#print(M1)
+
 z=np.zeros((1, dimentions))
 #making an array to save means of each class
 classes_means=np.zeros((number_of_classes,dimentions))
 for i in range(number_of_classes):
-    for j in range (nimages_in_each_class):
+    for j in range (nImages_in_each_class):
         #adding evens because index of arrays start at zero not 1
         if(j % 2 == 0):
             classes_means[i]+=D[i*10+j][:]
     
+
+#finding Sb (replacement to B for higher no of classes) in LDA
+#nk is number of samples in kth class
+nk=nImages_in_each_class /2 
+#overall sample mean
+#get mean of each column and result is 1 row and 10304(dimentions) columns
+meu=np.mean(D,axis=0)
+#initializing Sb
+diff_means=meu-classes_means[0]
+dm_t=diff_means.transpose()
+B=np.matmul(diff_means,dm_t)
+Sb=nk*B
+
+for k in range(1,number_of_classes):
+    diff_means=meu-classes_means[k]
+    dm_t=diff_means.transpose()
+    B=np.matmul(diff_means,dm_t)
+    Sb+=nk*B
 
