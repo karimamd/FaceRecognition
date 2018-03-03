@@ -21,7 +21,8 @@ strategy:
     can measure distance with all training points and find label accordingly
     
 current step:
-    finding Sb (replacement to B for higher no of classes) in LDA 
+    center class matrices Zi
+    finding Sb (replacement to B for higher no of classes) in LDA  (done)
     finding mean for each class training data (done)
 # =============================================================================
 '''
@@ -48,6 +49,7 @@ for i in range(number_of_classes):
         #adding evens because index of arrays start at zero not 1
         if(j % 2 == 0):
             classes_means[i]+=D[i*10+j][:]
+classes_means/=(nImages_in_each_class/2)
     
 
 #finding Sb (replacement to B for higher no of classes) in LDA
@@ -56,15 +58,40 @@ nk=nImages_in_each_class /2
 #overall sample mean
 #get mean of each column and result is 1 row and 10304(dimentions) columns
 meu=np.mean(D,axis=0)
+#print("meu:")
+#print(meu.shape) 
 #initializing Sb
-diff_means=meu-classes_means[0]
-dm_t=diff_means.transpose()
-B=np.matmul(diff_means,dm_t)
-Sb=nk*B
+Sb=np.zeros((dimentions,dimentions))
 
-for k in range(1,number_of_classes):
-    diff_means=meu-classes_means[k]
+for k in range(number_of_classes):
+    diff_means=classes_means[k]-meu
+    diff_means=np.reshape(diff_means,(1,10304) )
     dm_t=diff_means.transpose()
-    B=np.matmul(diff_means,dm_t)
+    B=np.matmul(dm_t,diff_means)
     Sb+=nk*B
+#print(Sb.shape) #(10304, 10304)
+#center class matrices Zi i=0,1,2...39
+Z=D
+for i in range(number_of_classes):
+    for j in range (nImages_in_each_class):
+        #TODO classes means for dummy data is array of 5s is that correct?
+        if(j % 2 == 0):
+            #print(classes_means[i])
+            #initializing S : within-class scatter matrix
+            S=Sb=np.zeros((1,dimentions))
+            #class scatter matrices Si
+            Z[i*10+j]-=classes_means[i][:]
+#TODO check if Si the within class scatter matrix is same as covarience matrix
+#of Z center class matrix
+# or is it equal to covarience matrix of class i mean and so on
+#or should I calculate S as in Algorithm
+S_i=np.cov(classes_means[i])
+S=np.cov(Z.T)
+print(S.shape)
+
+#print(Z)
+#print(Z.shape) #(400, 10304)
+#print(S.shape) #(1, 10304)
+#Sb replaces Si
+
 
