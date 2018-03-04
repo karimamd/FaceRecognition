@@ -89,6 +89,7 @@ for i in range(number_of_classes):
             Z[i*10+j]-=classes_means[i][:]
 #print(Z)
 #print("shape of Z:",Z.shape) #(400, 10304)
+'''
   
 """within class scatter matrix S :"""
           
@@ -113,20 +114,28 @@ for i in range (rows):
         S_i=np.dot(S_i.T,S_i)
         S+=S_i
 
-S_inv=np.inv(S)
+S_inv=np.linalg.inv(S)
 #Eigen vectors and values:
 S_inv_mul_B=np.matmul(S_inv,Sb)
+print("shapes of S_inv and Sb,S_inv_mul",S_inv,Sb,S_inv_mul)
+"""
+#commenting those because of high processing
+
 eigenvals,eigenvecs = np.linalg.eig(S_inv_mul_B)
 #sorting eigen values in descending order
 sort_idx = np.argsort(eigenvals)[::-1]
 eigenvals = eigenvals[sort_idx]
 eigenvecs = eigenvecs[:,sort_idx]
+print("shape of eigen values",eigenvals)
+print("shape of eigen vectors",eigenvecs)
+
 lamb=eigenvals[0]
 print("highest eigen value")
 print(lamb)
 print("corresponding eigen vector (direction)")
 w=eigenvecs[:,0]
 print(w)
+"""
 
 
-
+'''
