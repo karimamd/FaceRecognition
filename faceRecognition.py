@@ -19,18 +19,27 @@ from scipy.spatial import distance
 # SIMPLE CLASSIFIER ROUTINE
 # =============================================================================
 
-def classify(data_mat0, data_mat1, label_mat):
+
+def classify(
+    data_mat0,
+    data_mat1,
+    label_mat0,
+    label_mat1,
+    ):
+    
     length = data_mat0.shape[0]
     map_ = np.zeros((1, length))
     label_mat_new = np.zeros((1, length))
-    accuracy_mat = np.zeros((1, length))
-    for i in range(length):
-        for j in range(length):
+    accuracy_mat = np.ones((1, length))
+
+    for i in range(0, length):
+        for j in range(0, length):
             map_[0, j] = distance.euclidean(data_mat1[i], data_mat0[j])
         arg = map_.argmin()
-        label_mat_new[0, i] = label_mat[arg * 2]
-        if label_mat_new[0, i] == label_mat[2 * i + 1]:
-            accuracy_mat[0, i] = 1
+        label_mat_new[0, i] = label_mat0[arg]
+        if label_mat_new[0, i] != label_mat1[i]:
+            accuracy_mat[0, i] = 0
+
     return 100 * np.sum(accuracy_mat) / np.size(accuracy_mat)
 
 
@@ -39,6 +48,7 @@ def classify(data_mat0, data_mat1, label_mat):
 # =============================================================================
 
 def getProj(data_matrix, alpha, str):
+    
     isAlpha = False
     number = 0
     data_matrix_centered = data_matrix - np.mean(data_matrix, axis=0)
@@ -66,7 +76,7 @@ def getProj(data_matrix, alpha, str):
             pickle.dump(projection_matrix, handle,
                         protocol=pickle.HIGHEST_PROTOCOL)
     else:
-        print('Error.'+' Another file with same name already found.')
+        print ('Error.' + ' Another file with same name already found.')
     return projection_matrix
 
 
@@ -80,6 +90,7 @@ def PCA_(
     alpha,
     str,
     ):
+
     data_matrix_centered = data_matrix - np.mean(data_matrix, axis=0)
     if proj_matrix is None:
         projection_matrix = getProj(data_matrix, alpha, str)
@@ -107,15 +118,20 @@ for j in range(1, 41):
         imageVect = np.asmatrix(image.flatten())
         imgMat = np.concatenate((imgMat, imageVect))
 
-training_data_matrix = imgMat[::2]
 test_data_matrix = imgMat[::1]
+training_data_matrix = imgMat[::2]
+
+label_test = label_matrix[::1]
+label_training = label_matrix[::2]
 
 # =============================================================================
 # COMPUTING ACCURACY FOR EACH ALPHA
 # =============================================================================
+
 # proj_data_mat=getProj(training_data_matrix,0.95,"proj_data_mat_0.95")
 
 alpha = np.matrix([[0.8, 0.85, 0.9, 0.95]])
+
 for k in range(alpha.size):
     with open('proj_data_mat_' + str(alpha[0, k]) + '.pickle', 'rb') as \
         handle:
@@ -125,8 +141,8 @@ for k in range(alpha.size):
     test_data_matrix_rd = PCA_(test_data_matrix, proj_data_mat,
                                alpha[0, k], '')
     acc_prc = classify(training_data_matrix_rd, test_data_matrix_rd,
-                       label_matrix)
-    print('For alpha: ' + str(alpha[0, k]) + ' accuracy percentage= ' \
+                       label_training, label_test)
+    print ('For alpha: ' + str(alpha[0, k]) + ' accuracy percentage= ' \
         + str(acc_prc) + '%\n')
         
 
