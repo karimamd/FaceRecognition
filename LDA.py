@@ -46,7 +46,7 @@ dimentions=10304
 D=np.ones((rows, dimentions))
 #print(D)
 
-z=np.zeros((1, dimentions))
+#z=np.zeros((1, dimentions))
 #making an array to save means of each class (40,10304)
 classes_means=np.zeros((number_of_classes,dimentions))
 for i in range(number_of_classes):
@@ -89,7 +89,7 @@ for i in range(number_of_classes):
             Z[i*10+j]-=classes_means[i][:]
 #print(Z)
 #print("shape of Z:",Z.shape) #(400, 10304)
-'''
+
   
 """within class scatter matrix S :"""
           
@@ -97,8 +97,8 @@ for i in range(number_of_classes):
 #of Z center class matrix
 # or is it equal to covarience matrix of class i mean and so on
 #or should I calculate S as in Algorithm
-#S_i=np.cov(classes_means[i])
-#S=np.cov(Z.T)
+#S_i=np.cov(classes_means[i]) #S+=S_i #in for loop ?
+#or : #S=np.cov(Z.T) #produces 10304 * 10304 matrix
 #print(S.shape)
 #S_trail=np.zeros((1,dimentions))
             
@@ -106,18 +106,19 @@ for i in range(number_of_classes):
 #TODO check if it is true to make Zi as 5 samples for each i and summing them
 #or is this the thing that made us say that Si was covariance of sth in the first place? 
 S=np.zeros((dimentions,dimentions))
-S_initial=np.zeros((1,dimentions))
-for i in range (rows):
-    if (i %2 == 0):    
-        S_i=S_initial
-        S_i+=Z[i]
-        S_i=np.dot(S_i.T,S_i)
-        S+=S_i
+S_initial=np.zeros((5,dimentions))
+for i in range (number_of_classes):
+    for j in range (nImages_in_each_class):
+        if (j % 2== 0):    
+            S_i=S_initial
+            S_i[j/2]+=Z[i*10+j]
+    S_i=np.dot(S_i.T,S_i)
+    S+=S_i
 
 S_inv=np.linalg.inv(S)
 #Eigen vectors and values:
 S_inv_mul_B=np.matmul(S_inv,Sb)
-print("shapes of S_inv and Sb,S_inv_mul",S_inv,Sb,S_inv_mul)
+print("shapes of S_inv and Sb,S_inv_mul_ﻵ",S_inv,Sb,S_inv_mul_B)
 """
 #commenting those because of high processing
 
@@ -137,5 +138,3 @@ w=eigenvecs[:,0]
 print(w)
 """
 
-
-'''
