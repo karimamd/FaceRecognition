@@ -23,7 +23,8 @@ strategy:
     can measure distance with all training points and find label accordingly
     
 current step:
-    getting 39 dominant eigen vectors instead of just one
+    projecting training and test sets separately using same projection
+    getting 39 dominant eigen vectors instead of just one (done)
     eigen values and vectors and dominant one (done by ny tested)
     within class scatter matrix S (done with doubt I think can go wrong need to implement it in the other way too)
     center class matrices Zi (done)
@@ -106,20 +107,22 @@ for i in range(number_of_classes):
 #TODO check if it is true to make Zi as 5 samples for each i and summing them
 #or is this the thing that made us say that Si was covariance of sth in the first place? 
 S=np.zeros((dimentions,dimentions))
-S_initial=np.zeros((5,dimentions))
+S_initial=np.zeros((nImages_in_each_class // 2,dimentions))
 for i in range (number_of_classes):
-    for j in range (nImages_in_each_class):
+    for j in range (nImages_in_each_class // 1):
         if (j % 2== 0):    
             S_i=S_initial
-            S_i[j/2]+=Z[i*10+j]
+            S_i[j // 2]+=Z[i*10+j]
     S_i=np.dot(S_i.T,S_i)
     S+=S_i
 
-S_inv=np.linalg.inv(S)
+#S_inv=np.linalg.inv(S)
+#S_inv= np.linalg.solve(S, np.identity(10304))
+S_inv= np.linalg.pinv(S)
 #Eigen vectors and values:
 S_inv_mul_B=np.matmul(S_inv,Sb)
-print("shapes of S_inv and Sb,S_inv_mul_ﻵ",S_inv,Sb,S_inv_mul_B)
-"""
+print("shapes of S_inv and Sb,S_inv_mul_",S_inv,Sb,S_inv_mul_B)
+
 #commenting those because of high processing
 
 eigenvals,eigenvecs = np.linalg.eig(S_inv_mul_B)
@@ -130,11 +133,10 @@ eigenvecs = eigenvecs[:,sort_idx]
 print("shape of eigen values",eigenvals)
 print("shape of eigen vectors",eigenvecs)
 
-lamb=eigenvals[0]
-print("highest eigen value")
-print(lamb)
-print("corresponding eigen vector (direction)")
-w=eigenvecs[:,0]
-print(w)
-"""
+lamb=np.zeros(39)
+u=np.zeros((39,10304))
+for i in range(39):
+    lamb[i]+=eigenvals[i]
+    u[i]+=eigenvecs[:,i]
 
+    

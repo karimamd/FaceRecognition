@@ -7,5 +7,5 @@ Created on Thu Mar  1 22:17:27 2018
 
 """
 import numpy as np
-for i in range(1,10):
-    print(i)
+lol= 5 // 2
+print(lol)
