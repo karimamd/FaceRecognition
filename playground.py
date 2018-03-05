@@ -8,6 +8,7 @@ Created on Tue Feb 27 09:51:13 2018
 
 import matplotlib.image as img
 import numpy as np
+<<<<<<< HEAD
 import math
 from numpy import linalg as LA
 import pickle
@@ -26,7 +27,7 @@ def classify(
     label_mat0,
     label_mat1,
     ):
-    
+
     length = data_mat0.shape[0]
     map_ = np.zeros((1, length))
     label_mat_new = np.zeros((1, length))
@@ -48,7 +49,7 @@ def classify(
 # =============================================================================
 
 def getProj(data_matrix, alpha, str):
-    
+
     isAlpha = False
     number = 0
     data_matrix_centered = data_matrix - np.mean(data_matrix, axis=0)
@@ -144,10 +145,3 @@ for k in range(alpha.size):
                        label_training, label_test)
     print ('For alpha: ' + str(alpha[0, k]) + ' accuracy percentage= ' \
         + str(acc_prc) + '%\n')
-        
-
-               
-            
-        
-    
-    
