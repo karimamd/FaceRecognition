@@ -118,12 +118,12 @@ for j in range(1, 41):
         imageVect = np.asmatrix(image.flatten())
         imgMat = np.concatenate((imgMat, imageVect))
 
-test_data_matrix = imgMat[1::1]
-training_data_matrix = imgMat[::2]
 
-label_test = label_matrix[::1]
-label_training = label_matrix[::2]
+test_data_matrix = imgMat[0:400:2]
+training_data_matrix = imgMat[1:400:2]
 
+label_test = label_matrix[0:400:2]
+label_training = label_matrix[1:400:2]
 # =============================================================================
 # COMPUTING ACCURACY FOR EACH ALPHA
 # =============================================================================

@@ -132,8 +132,7 @@ for i in range(39):
     lamb[i]+=eigenvals[i]
     u[i]+=eigenvecs[:,i]
     
-#p_train=(u.transpose().dot(train))/(u.transpose().dot(u)) *u    
-#p_test=(u.transpose().dot(train))/(u.transpose().dot(u)) *u
-
+p_train=training_data_matrix.dot(u)  
+p_test=test_data_matrix.dot(u)
 
     
