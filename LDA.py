@@ -4,13 +4,6 @@ Always check for TODOs before rapping up
 
 Dimentionality reduction and classification using LDA
 # =============================================================================
-# every class is 10 vectors each of r values (supposidly 10304) because LDA
-will not continue from where PCA left
-
-#or each class is 10 rows in the data matrix D
-#required is to take mean of each 10 rows into 1 row and 10304 (r) columns
-
-#but they are not 10 only 5 because other 5 are test data
 
 strategy:
     get line (direction) with highest eigen value after implementing LDA
@@ -60,7 +53,7 @@ classes_means/=(nImages_in_each_class/2)
 
 #finding Sb (replacement to B for higher no of classes) in LDA
 #nk is number of samples in kth class
-nk=nImages_in_each_class /2 
+nk=nImages_in_each_class // 2 
 #overall sample mean
 #get mean of each column and result is 1 row and 10304(dimentions) columns
 meu=np.mean(D,axis=0)
@@ -138,5 +131,9 @@ u=np.zeros((39,10304))
 for i in range(39):
     lamb[i]+=eigenvals[i]
     u[i]+=eigenvecs[:,i]
+    
+#p_train=(u.transpose().dot(train))/(u.transpose().dot(u)) *u    
+#p_test=(u.transpose().dot(train))/(u.transpose().dot(u)) *u
+
 
     
