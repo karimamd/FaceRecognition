@@ -301,17 +301,432 @@ simple. It has 40 subjects.
     \paragraph{1-Downloading the dataset}\label{downloading-the-dataset}
 
 We will use ORL dataset:
+
 http://www.cl.cam.ac.uk/research/dtg/attarchive/facedatabase.html
 
-The data is available at the following link.
+The data is available at the following link:
+
 http://www.cl.cam.ac.uk/Research/DTG/attarchive/pub/data/att\_faces.tar.Z
 
 The dataset has 10 images per 40 subjects. Every image is a grayscale
 image of size 92x112.
 
-    \paragraph{2-Generating the Data Matrix and the Label
+    intial setup,imports and functions declaration :
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}3}]:} \PY{c+c1}{\PYZsh{}initial imports}
+        \PY{k+kn}{import} \PY{n+nn}{matplotlib}\PY{n+nn}{.}\PY{n+nn}{image} \PY{k}{as} \PY{n+nn}{img}
+        \PY{k+kn}{import} \PY{n+nn}{numpy} \PY{k}{as} \PY{n+nn}{np}
+        \PY{k+kn}{import} \PY{n+nn}{math}
+        \PY{k+kn}{from} \PY{n+nn}{numpy} \PY{k}{import} \PY{n}{linalg} \PY{k}{as} \PY{n}{LA}
+        \PY{k+kn}{import} \PY{n+nn}{pickle}
+        \PY{k+kn}{from} \PY{n+nn}{pathlib} \PY{k}{import} \PY{n}{Path}
+        \PY{k+kn}{from} \PY{n+nn}{scipy}\PY{n+nn}{.}\PY{n+nn}{spatial} \PY{k}{import} \PY{n}{distance}
+        \PY{k+kn}{import} \PY{n+nn}{operator}
+        \PY{k+kn}{import} \PY{n+nn}{matplotlib}\PY{n+nn}{.}\PY{n+nn}{pyplot} \PY{k}{as} \PY{n+nn}{plt}
+        \PY{k+kn}{import} \PY{n+nn}{faceRecognition}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+For alpha: 0.8 accuracy percentage= 83.0\%
+
+For alpha: 0.85 accuracy percentage= 85.5\%
+
+For alpha: 0.9 accuracy percentage= 87.0\%
+
+For alpha: 0.95 accuracy percentage= 87.5\%
+
+
+    \end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}60}]:} \PY{c+c1}{\PYZsh{} =============================================================================}
+         \PY{c+c1}{\PYZsh{} SIMPLE CLASSIFIER ROUTINE}
+         \PY{c+c1}{\PYZsh{} =============================================================================}
+         
+         
+         \PY{k}{def} \PY{n+nf}{classify}\PY{p}{(}
+             \PY{n}{data\PYZus{}mat0}\PY{p}{,}
+             \PY{n}{data\PYZus{}mat1}\PY{p}{,}
+             \PY{n}{label\PYZus{}mat0}\PY{p}{,}
+             \PY{n}{label\PYZus{}mat1}\PY{p}{,}
+             \PY{p}{)}\PY{p}{:}
+         
+             \PY{n}{length} \PY{o}{=} \PY{n}{data\PYZus{}mat0}\PY{o}{.}\PY{n}{shape}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}
+             \PY{n}{map\PYZus{}} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{,} \PY{n}{length}\PY{p}{)}\PY{p}{)}
+             \PY{n}{label\PYZus{}mat\PYZus{}new} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{,} \PY{n}{length}\PY{p}{)}\PY{p}{)}
+             \PY{n}{accuracy\PYZus{}mat} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{ones}\PY{p}{(}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{,} \PY{n}{length}\PY{p}{)}\PY{p}{)}
+         
+             \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{length}\PY{p}{)}\PY{p}{:}
+                 \PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{length}\PY{p}{)}\PY{p}{:}
+                     \PY{n}{map\PYZus{}}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{j}\PY{p}{]} \PY{o}{=} \PY{n}{distance}\PY{o}{.}\PY{n}{euclidean}\PY{p}{(}\PY{n}{data\PYZus{}mat1}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{,} \PY{n}{data\PYZus{}mat0}\PY{p}{[}\PY{n}{j}\PY{p}{]}\PY{p}{)}
+                 \PY{n}{arg} \PY{o}{=} \PY{n}{map\PYZus{}}\PY{o}{.}\PY{n}{argmin}\PY{p}{(}\PY{p}{)}
+                 \PY{n}{label\PYZus{}mat\PYZus{}new}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{i}\PY{p}{]} \PY{o}{=} \PY{n}{label\PYZus{}mat0}\PY{p}{[}\PY{n}{arg}\PY{p}{]}
+                 \PY{k}{if} \PY{n}{label\PYZus{}mat\PYZus{}new}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{i}\PY{p}{]} \PY{o}{!=} \PY{n}{label\PYZus{}mat1}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{:}
+                     \PY{n}{accuracy\PYZus{}mat}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{i}\PY{p}{]} \PY{o}{=} \PY{l+m+mi}{0}
+         
+             \PY{k}{return} \PY{l+m+mi}{100} \PY{o}{*} \PY{n}{np}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{n}{accuracy\PYZus{}mat}\PY{p}{)} \PY{o}{/} \PY{n}{np}\PY{o}{.}\PY{n}{size}\PY{p}{(}\PY{n}{accuracy\PYZus{}mat}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}61}]:} \PY{c+c1}{\PYZsh{} =============================================================================}
+         \PY{c+c1}{\PYZsh{} PROJECTION MATRIX ROUTINE}
+         \PY{c+c1}{\PYZsh{} =============================================================================}
+         
+         \PY{k}{def} \PY{n+nf}{getProj}\PY{p}{(}\PY{n}{data\PYZus{}matrix}\PY{p}{,} \PY{n}{alpha}\PY{p}{,} \PY{n+nb}{str}\PY{p}{)}\PY{p}{:}
+         
+             \PY{n}{isAlpha} \PY{o}{=} \PY{k+kc}{False}
+             \PY{n}{number} \PY{o}{=} \PY{l+m+mi}{0}
+             \PY{n}{data\PYZus{}matrix\PYZus{}centered} \PY{o}{=} \PY{n}{data\PYZus{}matrix} \PY{o}{\PYZhy{}} \PY{n}{np}\PY{o}{.}\PY{n}{mean}\PY{p}{(}\PY{n}{data\PYZus{}matrix}\PY{p}{,} \PY{n}{axis}\PY{o}{=}\PY{l+m+mi}{0}\PY{p}{)}
+             \PY{n}{data\PYZus{}matrix\PYZus{}cov} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{cov}\PY{p}{(}\PY{n}{data\PYZus{}matrix\PYZus{}centered}\PY{p}{,} \PY{n}{rowvar}\PY{o}{=}\PY{k+kc}{False}\PY{p}{)}
+             \PY{p}{(}\PY{n}{eigenValues}\PY{p}{,} \PY{n}{eigenVectors}\PY{p}{)} \PY{o}{=} \PY{n}{LA}\PY{o}{.}\PY{n}{eigh}\PY{p}{(}\PY{n}{data\PYZus{}matrix\PYZus{}cov}\PY{p}{)}
+             \PY{n}{idx} \PY{o}{=} \PY{n}{eigenValues}\PY{o}{.}\PY{n}{argsort}\PY{p}{(}\PY{p}{)}\PY{p}{[}\PY{p}{:}\PY{p}{:}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{]}
+             \PY{n}{eigenValues} \PY{o}{=} \PY{n}{eigenValues}\PY{p}{[}\PY{n}{idx}\PY{p}{]}
+             \PY{n}{eigenVectors} \PY{o}{=} \PY{n}{eigenVectors}\PY{p}{[}\PY{p}{:}\PY{p}{,} \PY{n}{idx}\PY{p}{]}
+             \PY{n}{total} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{n}{eigenValues}\PY{p}{)}
+         
+             \PY{k}{while} \PY{n}{isAlpha} \PY{o}{==} \PY{k+kc}{False}\PY{p}{:}
+                 \PY{n}{sum\PYZus{}eigVal} \PY{o}{=} \PY{l+m+mf}{0.0}
+                 \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{eigenValues}\PY{o}{.}\PY{n}{size}\PY{p}{)}\PY{p}{:}
+                     \PY{n}{sum\PYZus{}eigVal} \PY{o}{=} \PY{n}{sum\PYZus{}eigVal} \PY{o}{+} \PY{n}{eigenValues}\PY{p}{[}\PY{n}{i}\PY{p}{]} \PY{o}{/} \PY{n}{total}
+                     \PY{n}{number} \PY{o}{+}\PY{o}{=} \PY{l+m+mi}{1}
+                     \PY{k}{if} \PY{n}{math}\PY{o}{.}\PY{n}{isclose}\PY{p}{(}\PY{n}{sum\PYZus{}eigVal}\PY{p}{,} \PY{n}{alpha}\PY{p}{)} \PY{o+ow}{or} \PY{n}{sum\PYZus{}eigVal} \PY{o}{\PYZgt{}} \PY{n}{alpha}\PY{p}{:}
+                         \PY{n}{isAlpha} \PY{o}{=} \PY{k+kc}{True}
+                         \PY{k}{break}
+         
+             \PY{n}{projection\PYZus{}matrix} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{matrix}\PY{p}{(}\PY{p}{[}\PY{n}{eigenVectors}\PY{p}{[}\PY{n}{n}\PY{p}{]} \PY{k}{for} \PY{n}{n} \PY{o+ow}{in}
+                                           \PY{n+nb}{range}\PY{p}{(}\PY{n}{number}\PY{p}{)}\PY{p}{]}\PY{p}{)}\PY{o}{.}\PY{n}{T}
+         
+             \PY{k}{if} \PY{o+ow}{not} \PY{n}{Path}\PY{p}{(}\PY{n+nb}{str} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.pickle}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{o}{.}\PY{n}{exists}\PY{p}{(}\PY{p}{)}\PY{p}{:}
+                 \PY{k}{with} \PY{n+nb}{open}\PY{p}{(}\PY{n+nb}{str} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.pickle}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{wb}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)} \PY{k}{as} \PY{n}{handle}\PY{p}{:}
+                     \PY{n}{pickle}\PY{o}{.}\PY{n}{dump}\PY{p}{(}\PY{n}{projection\PYZus{}matrix}\PY{p}{,} \PY{n}{handle}\PY{p}{,}
+                                 \PY{n}{protocol}\PY{o}{=}\PY{n}{pickle}\PY{o}{.}\PY{n}{HIGHEST\PYZus{}PROTOCOL}\PY{p}{)}
+             \PY{k}{else}\PY{p}{:}
+                 \PY{n+nb}{print} \PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Error.}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{ Another file with same name already found.}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+             \PY{k}{return} \PY{n}{projection\PYZus{}matrix}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}62}]:} \PY{c+c1}{\PYZsh{} =============================================================================}
+         \PY{c+c1}{\PYZsh{} PCA ROUTINE}
+         \PY{c+c1}{\PYZsh{} =============================================================================}
+         
+         \PY{k}{def} \PY{n+nf}{PCA\PYZus{}}\PY{p}{(}
+             \PY{n}{data\PYZus{}matrix}\PY{p}{,}
+             \PY{n}{proj\PYZus{}matrix}\PY{p}{,}
+             \PY{n}{alpha}\PY{p}{,}
+             \PY{n+nb}{str}\PY{p}{,}
+             \PY{p}{)}\PY{p}{:}
+         
+             \PY{n}{data\PYZus{}matrix\PYZus{}centered} \PY{o}{=} \PY{n}{data\PYZus{}matrix} \PY{o}{\PYZhy{}} \PY{n}{np}\PY{o}{.}\PY{n}{mean}\PY{p}{(}\PY{n}{data\PYZus{}matrix}\PY{p}{,} \PY{n}{axis}\PY{o}{=}\PY{l+m+mi}{0}\PY{p}{)}
+             \PY{k}{if} \PY{n}{proj\PYZus{}matrix} \PY{o+ow}{is} \PY{k+kc}{None}\PY{p}{:}
+                 \PY{n}{projection\PYZus{}matrix} \PY{o}{=} \PY{n}{getProj}\PY{p}{(}\PY{n}{data\PYZus{}matrix}\PY{p}{,} \PY{n}{alpha}\PY{p}{,} \PY{n+nb}{str}\PY{p}{)}
+             \PY{k}{else}\PY{p}{:}
+                 \PY{n}{projection\PYZus{}matrix} \PY{o}{=} \PY{n}{proj\PYZus{}matrix}
+         
+             \PY{n}{rd\PYZus{}data\PYZus{}matrix} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{matmul}\PY{p}{(}\PY{n}{data\PYZus{}matrix\PYZus{}centered}\PY{p}{,} \PY{n}{projection\PYZus{}matrix}\PY{p}{)}
+             \PY{k}{return} \PY{n}{rd\PYZus{}data\PYZus{}matrix}
+\end{Verbatim}
+
+
+    \subsubsection{2-Generating the Data Matrix and the Label
 vector}\label{generating-the-data-matrix-and-the-label-vector}
 
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}6}]:} \PY{c+c1}{\PYZsh{} =============================================================================}
+        \PY{c+c1}{\PYZsh{} INITIAL SETUP}
+        \PY{c+c1}{\PYZsh{} =============================================================================}
+        
+        \PY{n}{imgMat} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{10304}\PY{p}{)}\PY{p}{)}
+        \PY{n}{temp} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{arange}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{41}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}
+        \PY{n}{label\PYZus{}matrix} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{array}\PY{p}{(}\PY{p}{[}\PY{p}{[}\PY{n}{temp}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{]} \PY{o}{*} \PY{l+m+mi}{10} \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{temp}\PY{o}{.}\PY{n}{size}\PY{p}{)}\PY{p}{]}\PY{p}{)}
+        \PY{n}{label\PYZus{}matrix} \PY{o}{=} \PY{n}{label\PYZus{}matrix}\PY{o}{.}\PY{n}{flatten}\PY{p}{(}\PY{p}{)}
+        \PY{c+c1}{\PYZsh{}put folder name containing ORL dataset}
+        \PY{c+c1}{\PYZsh{}note that this is for linux directory system for windows use those lines with changes}
+        \PY{c+c1}{\PYZsh{}folder=\PYZdq{}C:\PYZbs{}\PYZbs{}FaceReco\PYZbs{}\PYZbs{}orl\PYZus{}faces\PYZbs{}\PYZbs{}\PYZdq{}}
+        \PY{c+c1}{\PYZsh{} direction=folder+\PYZdq{}s\PYZdq{}+str(j)+\PYZdq{}\PYZbs{}\PYZbs{}\PYZdq{}}
+        \PY{n}{folder} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{orl\PYZus{}faces/}\PY{l+s+s1}{\PYZsq{}}
+        \PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{41}\PY{p}{)}\PY{p}{:}
+            \PY{n}{direction} \PY{o}{=} \PY{n}{folder} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{s}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n+nb}{str}\PY{p}{(}\PY{n}{j}\PY{p}{)} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{/}\PY{l+s+s1}{\PYZsq{}}
+            \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{11}\PY{p}{)}\PY{p}{:}
+                \PY{n}{directory} \PY{o}{=} \PY{n}{direction} \PY{o}{+} \PY{n+nb}{str}\PY{p}{(}\PY{n}{i}\PY{p}{)} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.pgm}\PY{l+s+s1}{\PYZsq{}}
+                \PY{n}{image} \PY{o}{=} \PY{n}{img}\PY{o}{.}\PY{n}{imread}\PY{p}{(}\PY{n}{directory}\PY{p}{)}\PY{o}{.}\PY{n}{T}
+                \PY{n}{imageVect} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{asmatrix}\PY{p}{(}\PY{n}{image}\PY{o}{.}\PY{n}{flatten}\PY{p}{(}\PY{p}{)}\PY{p}{)}
+                \PY{n}{imgMat} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{concatenate}\PY{p}{(}\PY{p}{(}\PY{n}{imgMat}\PY{p}{,} \PY{n}{imageVect}\PY{p}{)}\PY{p}{)}
+\end{Verbatim}
+
+
+    \subsubsection{3. Spliting the Dataset into Training and Test
+sets}\label{spliting-the-dataset-into-training-and-test-sets}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}7}]:} \PY{n}{test\PYZus{}data\PYZus{}matrix} \PY{o}{=} \PY{n}{imgMat}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{:}\PY{p}{:}\PY{l+m+mi}{1}\PY{p}{]}
+        \PY{n}{training\PYZus{}data\PYZus{}matrix} \PY{o}{=} \PY{n}{imgMat}\PY{p}{[}\PY{p}{:}\PY{p}{:}\PY{l+m+mi}{2}\PY{p}{]}
+        
+        \PY{n}{label\PYZus{}test} \PY{o}{=} \PY{n}{label\PYZus{}matrix}\PY{p}{[}\PY{p}{:}\PY{p}{:}\PY{l+m+mi}{1}\PY{p}{]}
+        \PY{n}{label\PYZus{}training} \PY{o}{=} \PY{n}{label\PYZus{}matrix}\PY{p}{[}\PY{p}{:}\PY{p}{:}\PY{l+m+mi}{2}\PY{p}{]}
+\end{Verbatim}
+
+
+    \subsubsection{4. Classification using
+PCA}\label{classification-using-pca}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}64}]:} \PY{c+c1}{\PYZsh{} =============================================================================}
+         \PY{c+c1}{\PYZsh{} COMPUTING ACCURACY FOR EACH ALPHA}
+         \PY{c+c1}{\PYZsh{} =============================================================================}
+         
+         \PY{c+c1}{\PYZsh{} proj\PYZus{}data\PYZus{}mat=getProj(training\PYZus{}data\PYZus{}matrix,0.95,\PYZdq{}proj\PYZus{}data\PYZus{}mat\PYZus{}0.95\PYZdq{})}
+         
+         \PY{n}{alpha} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{matrix}\PY{p}{(}\PY{p}{[}\PY{p}{[}\PY{l+m+mf}{0.8}\PY{p}{,} \PY{l+m+mf}{0.85}\PY{p}{,} \PY{l+m+mf}{0.9}\PY{p}{,} \PY{l+m+mf}{0.95}\PY{p}{]}\PY{p}{]}\PY{p}{)}
+         
+         \PY{k}{for} \PY{n}{k} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{alpha}\PY{o}{.}\PY{n}{size}\PY{p}{)}\PY{p}{:}
+             \PY{k}{with} \PY{n+nb}{open}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{proj\PYZus{}data\PYZus{}mat\PYZus{}}\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n+nb}{str}\PY{p}{(}\PY{n}{alpha}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{k}\PY{p}{]}\PY{p}{)} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{.pickle}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{rb}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)} \PY{k}{as} \PYZbs{}
+                 \PY{n}{handle}\PY{p}{:}
+                 \PY{n}{proj\PYZus{}data\PYZus{}mat} \PY{o}{=} \PY{n}{pickle}\PY{o}{.}\PY{n}{load}\PY{p}{(}\PY{n}{handle}\PY{p}{)}
+             \PY{n}{training\PYZus{}data\PYZus{}matrix\PYZus{}rd} \PY{o}{=} \PY{n}{PCA\PYZus{}}\PY{p}{(}\PY{n}{training\PYZus{}data\PYZus{}matrix}\PY{p}{,} \PY{n}{proj\PYZus{}data\PYZus{}mat}\PY{p}{,}
+                                            \PY{n}{alpha}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{k}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+             \PY{n}{test\PYZus{}data\PYZus{}matrix\PYZus{}rd} \PY{o}{=} \PY{n}{PCA\PYZus{}}\PY{p}{(}\PY{n}{test\PYZus{}data\PYZus{}matrix}\PY{p}{,} \PY{n}{proj\PYZus{}data\PYZus{}mat}\PY{p}{,}
+                                        \PY{n}{alpha}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{k}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+             \PY{n}{acc\PYZus{}prc} \PY{o}{=} \PY{n}{classify}\PY{p}{(}\PY{n}{training\PYZus{}data\PYZus{}matrix\PYZus{}rd}\PY{p}{,} \PY{n}{test\PYZus{}data\PYZus{}matrix\PYZus{}rd}\PY{p}{,}
+                                \PY{n}{label\PYZus{}training}\PY{p}{,} \PY{n}{label\PYZus{}test}\PY{p}{)}
+             \PY{n+nb}{print} \PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{For alpha: }\PY{l+s+s1}{\PYZsq{}} \PY{o}{+} \PY{n+nb}{str}\PY{p}{(}\PY{n}{alpha}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{k}\PY{p}{]}\PY{p}{)} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{ accuracy percentage= }\PY{l+s+s1}{\PYZsq{}} \PYZbs{}
+                 \PY{o}{+} \PY{n+nb}{str}\PY{p}{(}\PY{n}{acc\PYZus{}prc}\PY{p}{)} \PY{o}{+} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZpc{}}\PY{l+s+se}{\PYZbs{}n}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+For alpha: 0.8 accuracy percentage= 83.0\%
+
+For alpha: 0.85 accuracy percentage= 85.5\%
+
+For alpha: 0.9 accuracy percentage= 87.0\%
+
+For alpha: 0.95 accuracy percentage= 87.5\%
+
+
+    \end{Verbatim}
+
+    \subsection{5-Classification using LDA}\label{classification-using-lda}
+
+    a- i.Calculate the mean vector for every class Mu1,Mu2,..., Mu40
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}66}]:} \PY{c+c1}{\PYZsh{}number of images in total}
+         \PY{n}{rows}\PY{o}{=}\PY{l+m+mi}{400}
+         \PY{c+c1}{\PYZsh{}differenct people}
+         \PY{n}{number\PYZus{}of\PYZus{}classes}\PY{o}{=}\PY{l+m+mi}{40}
+         \PY{n}{nImages\PYZus{}in\PYZus{}each\PYZus{}class}\PY{o}{=}\PY{l+m+mi}{10}
+         \PY{c+c1}{\PYZsh{}dimentions of vector (image) before reduction}
+         \PY{n}{dimentions}\PY{o}{=}\PY{l+m+mi}{10304}
+         \PY{n}{D}\PY{o}{=}\PY{n}{imgMat}
+         
+         \PY{c+c1}{\PYZsh{}making an array to save means of each class (40,10304)}
+         \PY{n}{classes\PYZus{}means}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{p}{(}\PY{n}{number\PYZus{}of\PYZus{}classes}\PY{p}{,}\PY{n}{dimentions}\PY{p}{)}\PY{p}{)}
+         
+         \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{number\PYZus{}of\PYZus{}classes}\PY{p}{)}\PY{p}{:}
+             \PY{c+c1}{\PYZsh{}adding evens because index of arrays start at zero not 1}
+             \PY{n}{classes\PYZus{}means}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{mean}\PY{p}{(}\PY{n}{test\PYZus{}data\PYZus{}matrix}\PY{p}{[}\PY{n}{i}\PY{o}{*}\PY{l+m+mi}{5}\PY{p}{:}\PY{n}{i}\PY{o}{*}\PY{l+m+mi}{5}\PY{o}{+}\PY{l+m+mi}{5}\PY{p}{]}\PY{p}{,}\PY{n}{axis}\PY{o}{=}\PY{l+m+mi}{0}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{enumerate}
+\def\labelenumi{\roman{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Replace B matrix by Sb
+\end{enumerate}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}67}]:} \PY{c+c1}{\PYZsh{}finding Sb (replacement to B for higher no of classes) in LDA}
+         \PY{c+c1}{\PYZsh{}nk is number of samples in kth class}
+         \PY{n}{nk}\PY{o}{=}\PY{n}{nImages\PYZus{}in\PYZus{}each\PYZus{}class} \PY{o}{/}\PY{o}{/} \PY{l+m+mi}{2} 
+         \PY{c+c1}{\PYZsh{}overall sample mean}
+         \PY{c+c1}{\PYZsh{}get mean of each column and result is 1 row and 10304(dimentions) columns}
+         \PY{n}{meu}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{mean}\PY{p}{(}\PY{n}{D}\PY{p}{,}\PY{n}{axis}\PY{o}{=}\PY{l+m+mi}{0}\PY{p}{)}
+         \PY{c+c1}{\PYZsh{}initializing Sb}
+         \PY{n}{Sb}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{p}{(}\PY{n}{dimentions}\PY{p}{,}\PY{n}{dimentions}\PY{p}{)}\PY{p}{)}
+         
+         \PY{k}{for} \PY{n}{k} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{number\PYZus{}of\PYZus{}classes}\PY{p}{)}\PY{p}{:}
+             \PY{n}{diff\PYZus{}means}\PY{o}{=}\PY{n}{classes\PYZus{}means}\PY{p}{[}\PY{n}{k}\PY{p}{]}\PY{o}{\PYZhy{}}\PY{n}{meu}
+             \PY{n}{diff\PYZus{}means}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{reshape}\PY{p}{(}\PY{n}{diff\PYZus{}means}\PY{p}{,}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{10304}\PY{p}{)} \PY{p}{)}
+             \PY{n}{dm\PYZus{}t}\PY{o}{=}\PY{n}{diff\PYZus{}means}\PY{o}{.}\PY{n}{transpose}\PY{p}{(}\PY{p}{)}
+             \PY{n}{B}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{matmul}\PY{p}{(}\PY{n}{dm\PYZus{}t}\PY{p}{,}\PY{n}{diff\PYZus{}means}\PY{p}{)}
+             \PY{n}{Sb}\PY{o}{+}\PY{o}{=}\PY{n}{nk}\PY{o}{*}\PY{n}{B}
+         \PY{c+c1}{\PYZsh{}print(Sb.shape) \PYZsh{}(10304, 10304)}
+\end{Verbatim}
+
+
+    \begin{enumerate}
+\def\labelenumi{\roman{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  center class matrices Zi i=0,1,2...39
+\end{enumerate}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}68}]:} \PY{l+s+sd}{\PYZdq{}\PYZdq{}\PYZdq{}center class matrices Zi i=0,1,2...39 : \PYZdq{}\PYZdq{}\PYZdq{}}
+         \PY{n}{Z}\PY{o}{=}\PY{n}{D}
+         \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{number\PYZus{}of\PYZus{}classes}\PY{p}{)}\PY{p}{:}
+             \PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{range} \PY{p}{(}\PY{n}{nImages\PYZus{}in\PYZus{}each\PYZus{}class}\PY{p}{)}\PY{p}{:}
+                 \PY{k}{if}\PY{p}{(}\PY{n}{j} \PY{o}{\PYZpc{}} \PY{l+m+mi}{2} \PY{o}{==} \PY{l+m+mi}{0}\PY{p}{)}\PY{p}{:}
+                     \PY{n}{Z}\PY{p}{[}\PY{n}{i}\PY{o}{*}\PY{l+m+mi}{10}\PY{o}{+}\PY{n}{j}\PY{p}{]}\PY{o}{\PYZhy{}}\PY{o}{=}\PY{n}{classes\PYZus{}means}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{[}\PY{p}{:}\PY{p}{]}
+         \PY{c+c1}{\PYZsh{}print(\PYZdq{}shape of Z:\PYZdq{},Z.shape) \PYZsh{}(400, 10304)}
+\end{Verbatim}
+
+
+    S within class scatter matrix
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor} }]:} \PY{l+s+sd}{\PYZdq{}\PYZdq{}\PYZdq{}within class scatter matrix S :\PYZdq{}\PYZdq{}\PYZdq{}}
+        \PY{n}{S}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{p}{(}\PY{n}{dimentions}\PY{p}{,}\PY{n}{dimentions}\PY{p}{)}\PY{p}{)}
+        \PY{n}{S\PYZus{}initial}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{p}{(}\PY{n}{nImages\PYZus{}in\PYZus{}each\PYZus{}class} \PY{o}{/}\PY{o}{/} \PY{l+m+mi}{2}\PY{p}{,}\PY{n}{dimentions}\PY{p}{)}\PY{p}{)}
+        \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range} \PY{p}{(}\PY{n}{number\PYZus{}of\PYZus{}classes}\PY{p}{)}\PY{p}{:}
+            \PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{range} \PY{p}{(}\PY{n}{nImages\PYZus{}in\PYZus{}each\PYZus{}class} \PY{o}{/}\PY{o}{/} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{:}
+                \PY{k}{if} \PY{p}{(}\PY{n}{j} \PY{o}{\PYZpc{}} \PY{l+m+mi}{2}\PY{o}{==} \PY{l+m+mi}{0}\PY{p}{)}\PY{p}{:}    
+                    \PY{n}{S\PYZus{}i}\PY{o}{=}\PY{n}{S\PYZus{}initial}
+                    \PY{n}{S\PYZus{}i}\PY{p}{[}\PY{n}{j} \PY{o}{/}\PY{o}{/} \PY{l+m+mi}{2}\PY{p}{]}\PY{o}{+}\PY{o}{=}\PY{n}{Z}\PY{p}{[}\PY{n}{i}\PY{o}{*}\PY{l+m+mi}{10}\PY{o}{+}\PY{n}{j}\PY{p}{]}
+            \PY{n}{S\PYZus{}i}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{dot}\PY{p}{(}\PY{n}{S\PYZus{}i}\PY{o}{.}\PY{n}{T}\PY{p}{,}\PY{n}{S\PYZus{}i}\PY{p}{)}
+            \PY{n}{S}\PY{o}{+}\PY{o}{=}\PY{n}{S\PYZus{}i}
+\end{Verbatim}
+
+
+    S inverse
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor} }]:} \PY{c+c1}{\PYZsh{}S\PYZus{}inv=np.linalg.inv(S)}
+        \PY{c+c1}{\PYZsh{}S\PYZus{}inv= np.linalg.solve(S, np.identity(10304))}
+        \PY{n}{S\PYZus{}inv}\PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{linalg}\PY{o}{.}\PY{n}{pinv}\PY{p}{(}\PY{n}{S}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{enumerate}
+\def\labelenumi{\roman{enumi}.}
+\setcounter{enumi}{3}
+\tightlist
+\item
+  getting eigenvectors and eigenvalues and using 39 dominant
+  eigenvectors instead of one
+\end{enumerate}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor} }]:} \PY{c+c1}{\PYZsh{}Eigen vectors and values:}
+        \PY{n}{S\PYZus{}inv\PYZus{}mul\PYZus{}B}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{matmul}\PY{p}{(}\PY{n}{S\PYZus{}inv}\PY{p}{,}\PY{n}{Sb}\PY{p}{)}
+        \PY{n+nb}{print}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{shapes of S\PYZus{}inv and Sb,S\PYZus{}inv\PYZus{}mul\PYZus{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,}\PY{n}{S\PYZus{}inv}\PY{o}{.}\PY{n}{shape}\PY{p}{,}\PY{n}{Sb}\PY{o}{.}\PY{n}{shape}\PY{p}{,}\PY{n}{S\PYZus{}inv\PYZus{}mul\PYZus{}B}\PY{p}{)}
+        
+        \PY{c+c1}{\PYZsh{}commenting those because of high processing}
+        
+        \PY{n}{eigenvals}\PY{p}{,}\PY{n}{eigenvecs} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{linalg}\PY{o}{.}\PY{n}{eig}\PY{p}{(}\PY{n}{S\PYZus{}inv\PYZus{}mul\PYZus{}B}\PY{p}{)}
+        \PY{c+c1}{\PYZsh{}sorting eigen values in descending order}
+        \PY{n}{sort\PYZus{}idx} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{argsort}\PY{p}{(}\PY{n}{eigenvals}\PY{p}{)}\PY{p}{[}\PY{p}{:}\PY{p}{:}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{]}
+        \PY{n}{eigenvals} \PY{o}{=} \PY{n}{eigenvals}\PY{p}{[}\PY{n}{sort\PYZus{}idx}\PY{p}{]}
+        \PY{n}{eigenvecs} \PY{o}{=} \PY{n}{eigenvecs}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{n}{sort\PYZus{}idx}\PY{p}{]}
+        \PY{n+nb}{print}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{shape of eigen values}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,}\PY{n}{eigenvals}\PY{p}{)}
+        \PY{n+nb}{print}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{shape of eigen vectors}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,}\PY{n}{eigenvecs}\PY{p}{)}
+        
+        
+        \PY{n}{lamb}\PY{o}{=}\PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{l+m+mi}{39}\PY{p}{)}
+        \PY{n}{lamp}\PY{o}{=}\PY{n}{eigenvals}\PY{p}{[}\PY{p}{:}\PY{l+m+mi}{39}\PY{p}{]}
+\end{Verbatim}
+
+
+    \subsubsection{b. Projecting the training set and test sets separately
+using same projection matrix
+U.}\label{b.-projecting-the-training-set-and-test-sets-separately-using-same-projection-matrix-u.}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor} }]:} \PY{c+c1}{\PYZsh{}some error here}
+        \PY{n}{p\PYZus{}train}\PY{o}{=}\PY{p}{(}\PY{n}{u}\PY{o}{.}\PY{n}{transpose}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{dot}\PY{p}{(}\PY{n}{training\PYZus{}data\PYZus{}matrix}\PY{p}{)}\PY{p}{)}\PY{o}{/}\PY{p}{(}\PY{n}{u}\PY{o}{.}\PY{n}{transpose}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{dot}\PY{p}{(}\PY{n}{u}\PY{p}{)}\PY{p}{)} \PY{o}{*}\PY{n}{u}    
+        \PY{n}{p\PYZus{}test}\PY{o}{=}\PY{p}{(}\PY{n}{u}\PY{o}{.}\PY{n}{transpose}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{dot}\PY{p}{(}\PY{n}{test\PYZus{}data\PYZus{}matrix}\PY{p}{)}\PY{p}{)}\PY{o}{/}\PY{p}{(}\PY{n}{u}\PY{o}{.}\PY{n}{transpose}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{dot}\PY{p}{(}\PY{n}{u}\PY{p}{)}\PY{p}{)} \PY{o}{*}\PY{n}{u}
+\end{Verbatim}
+
+
+    \subsection{6-Classifier Tuning}\label{classifier-tuning}
+
+    \paragraph{a. Set the number of neighbors in the K-NN classifier to
+1,3,5,7.}\label{a.-set-the-number-of-neighbors-in-the-k-nn-classifier-to-1357.}
+
+\paragraph{b. Tie breaking.}\label{b.-tie-breaking.}
+
+\paragraph{c. Ploting the performance measure (accuracy) against the K
+value.}\label{c.-ploting-the-performance-measure-accuracy-against-the-k-value.}
+
+\paragraph{This is done for PCA and LDA as
+well.}\label{this-is-done-for-pca-and-lda-as-well.}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}4}]:} \PY{n}{count}\PY{o}{=}\PY{l+m+mi}{1}
+        \PY{n}{labelVector} \PY{o}{=}\PY{p}{[}\PY{p}{]}
+        \PY{k}{for} \PY{n}{x} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{40}\PY{p}{)}\PY{p}{:} \PY{c+c1}{\PYZsh{}constructing the classes of each instance}
+            \PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{5}\PY{p}{)}\PY{p}{:}
+                \PY{n}{labelVector}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{count}\PY{p}{)}
+            \PY{n}{count}\PY{o}{=} \PY{n}{count}\PY{o}{+}\PY{l+m+mi}{1}
+        
+        \PY{k}{def} \PY{n+nf}{getAccuracy}\PY{p}{(}\PY{n}{predictedClasses}\PY{p}{,} \PY{n}{label\PYZus{}vector}\PY{p}{)}\PY{p}{:} \PY{c+c1}{\PYZsh{} check predicted classes for correctness}
+        	\PY{n}{correct} \PY{o}{=} \PY{l+m+mi}{0}
+        	\PY{k}{for} \PY{n}{x} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{predictedClasses}\PY{p}{)}\PY{p}{)}\PY{p}{:}
+        		\PY{k}{if} \PY{n}{predictedClasses}\PY{p}{[}\PY{n}{x}\PY{p}{]} \PY{o+ow}{is} \PY{n}{label\PYZus{}vector}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{p}{:}
+        			\PY{n}{correct} \PY{o}{+}\PY{o}{=} \PY{l+m+mi}{1}
+        	\PY{k}{return} \PY{p}{(}\PY{n}{correct}\PY{o}{/}\PY{n+nb}{float}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{predictedClasses}\PY{p}{)}\PY{p}{)}\PY{p}{)} \PY{o}{*} \PY{l+m+mf}{100.0}
+        \PY{k}{def} \PY{n+nf}{Knn}\PY{p}{(}\PY{n}{trainingSet}\PY{p}{,}\PY{n}{label\PYZus{}vector}\PY{p}{,}\PY{n}{test}\PY{p}{,}\PY{n}{k}\PY{p}{)}\PY{p}{:}
+            \PY{n}{distances} \PY{o}{=}\PY{p}{[}\PY{p}{]}
+            \PY{k}{for} \PY{n}{x} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{trainingSet}\PY{p}{)}\PY{p}{)}\PY{p}{:} \PY{c+c1}{\PYZsh{}calculating distance between test instance and all training data }
+                \PY{n}{distance} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{linalg}\PY{o}{.}\PY{n}{norm}\PY{p}{(}\PY{n}{np}\PY{o}{.}\PY{n}{subtract}\PY{p}{(}\PY{n}{test}\PY{p}{,}\PY{n}{trainingSet}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{p}{)}\PY{p}{)}
+                \PY{n}{distances}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{p}{(}\PY{n}{label\PYZus{}vector}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{p}{,}\PY{n}{distance}\PY{p}{)}\PY{p}{)} \PY{c+c1}{\PYZsh{}storung the distance with the class of the training instance }
+            \PY{n}{distances}\PY{o}{.}\PY{n}{sort}\PY{p}{(}\PY{n}{key}\PY{o}{=}\PY{n}{operator}\PY{o}{.}\PY{n}{itemgetter}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{)}\PY{p}{)} \PY{c+c1}{\PYZsh{}sorting distances array by the distance}
+            \PY{n}{neighbors} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+            \PY{k}{for} \PY{n}{x} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{k}\PY{p}{)}\PY{p}{:}
+                \PY{n}{neighbors}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{distances}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{p}{)} \PY{c+c1}{\PYZsh{}get the K neighbors of the instance}
+            \PY{n}{classes} \PY{o}{=}\PY{p}{\PYZob{}}\PY{p}{\PYZcb{}}
+            \PY{k}{for} \PY{n}{x} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{neighbors}\PY{p}{)}\PY{p}{)}\PY{p}{:} \PY{c+c1}{\PYZsh{}check classes for the neighbors}
+                \PY{n}{response}\PY{o}{=} \PY{n}{neighbors}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]} 
+                \PY{k}{if} \PY{n}{response} \PY{o+ow}{in} \PY{n}{classes}\PY{p}{:}
+                    \PY{n}{classes}\PY{p}{[}\PY{n}{response}\PY{p}{]} \PY{o}{+}\PY{o}{=} \PY{l+m+mi}{1} \PY{c+c1}{\PYZsh{}classVote found! increase voting by 1}
+                \PY{k}{else}\PY{p}{:}
+                    \PY{n}{classes}\PY{p}{[}\PY{n}{response}\PY{p}{]} \PY{o}{=} \PY{l+m+mi}{1} \PY{c+c1}{\PYZsh{}new classVote! add it to the dict}
+            \PY{n}{sortedVotes} \PY{o}{=} \PY{n+nb}{sorted}\PY{p}{(}\PY{n}{classes}\PY{o}{.}\PY{n}{items}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{key}\PY{o}{=}\PY{n}{operator}\PY{o}{.}\PY{n}{itemgetter}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{)}\PY{p}{,} \PY{n}{reverse}\PY{o}{=}\PY{k+kc}{True}\PY{p}{)}\PY{c+c1}{\PYZsh{}sort the class votes in decreasing order}
+            \PY{k}{return} \PY{n}{sortedVotes}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]} \PY{c+c1}{\PYZsh{}return the most voted class number}
+        \PY{c+c1}{\PYZsh{}list for getting the predictions for all test instances}
+        \PY{c+c1}{\PYZsh{}for x in range(200):    \PYZsh{}test all the test\PYZus{}data\PYZus{}matrix}
+        \PY{c+c1}{\PYZsh{}    list\PYZus{}of\PYZus{}predictions.append(Knn(faceRecognition.training\PYZus{}data\PYZus{}matrix,labelVector,faceRecognition.test\PYZus{}data\PYZus{}matrix[x],3))}
+        \PY{c+c1}{\PYZsh{}print(getAccuracy(list\PYZus{}of\PYZus{}predictions,labelVector),\PYZdq{}\PYZpc{}\PYZdq{})}
+        \PY{n}{k}\PY{o}{=}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{3}\PY{p}{,}\PY{l+m+mi}{5}\PY{p}{,}\PY{l+m+mi}{7}\PY{p}{]}
+        \PY{n}{accuracy}\PY{o}{=}\PY{p}{[}\PY{p}{]}
+        \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{4}\PY{p}{)}\PY{p}{:}
+            \PY{n}{list\PYZus{}of\PYZus{}predictions}\PY{o}{=}\PY{p}{[}\PY{p}{]} 
+            \PY{k}{for} \PY{n}{x} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{200}\PY{p}{)}\PY{p}{:}    \PY{c+c1}{\PYZsh{}test all the test\PYZus{}data\PYZus{}matrix}
+                \PY{n}{list\PYZus{}of\PYZus{}predictions}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{Knn}\PY{p}{(}\PY{n}{faceRecognition}\PY{o}{.}\PY{n}{training\PYZus{}data\PYZus{}matrix}\PY{p}{,}\PY{n}{labelVector}\PY{p}{,}\PY{n}{faceRecognition}\PY{o}{.}\PY{n}{test\PYZus{}data\PYZus{}matrix}\PY{p}{[}\PY{n}{x}\PY{p}{]}\PY{p}{,}\PY{n}{k}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{)}\PY{p}{)}
+            \PY{n}{accuracy}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{getAccuracy}\PY{p}{(}\PY{n}{list\PYZus{}of\PYZus{}predictions}\PY{p}{,}\PY{n}{labelVector}\PY{p}{)}\PY{p}{)}
+            \PY{n+nb}{print}\PY{p}{(}\PY{n}{accuracy}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{,}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{\PYZpc{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{k}\PY{p}{,}\PY{n}{accuracy}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{ylabel}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{accuracy in }\PY{l+s+s2}{\PYZpc{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{xlabel}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{K}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{show}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+3.0 \%
+3.0 \%
+3.0 \%
+2.5 \%
+
+    \end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\}]
+{\color{outcolor}Out[{\color{outcolor}4}]:} <function matplotlib.pyplot.show>
+\end{Verbatim}
+            
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_32_2.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
 
     % Add a bibliography block to the postdoc
     

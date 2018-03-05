@@ -109,9 +109,9 @@ imgMat = np.zeros((0, 10304))
 temp = np.arange(1, 41, 1)
 label_matrix = np.array([[temp[i]] * 10 for i in range(temp.size)])
 label_matrix = label_matrix.flatten()
-folder = 'orl_faces/'
+folder = '/home/kareem/Desktop/orl_faces'
 for j in range(1, 41):
-    direction = folder + 's' + str(j) + '/'
+    direction = folder + 's' + str(j) + '\\'
     for i in range(1, 11):
         directory = direction + str(i) + '.pgm'
         image = img.imread(directory).T
